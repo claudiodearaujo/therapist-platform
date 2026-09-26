@@ -47,7 +47,7 @@ Saída:
 
 ### P1 — Production Operations v1
 
-Status: 🟡 em andamento. [PRD](PRD-PRODUCTION-OPERATIONS-V1.md). PO-01 e PO-02 concluídos; PO-03 tem contrato de release/rollback implementado e aguarda evidência de promoção/smoke local. Exposição pública e billing permanecem desligados.
+Status: 🟡 em andamento. [PRD](PRD-PRODUCTION-OPERATIONS-V1.md). PO-01 a PO-03 concluídos no escopo local; PO-04 (observabilidade e alertas) é a próxima fase. Rollback registry-backed permanece gate de staging/production. Exposição pública e billing permanecem desligados.
 
 Objetivo: tornar deploy e recuperação reproduzíveis fora da máquina local.
 
