@@ -87,10 +87,22 @@ app.use(generalLimiter);
 // HEALTH CHECK
 // =============================================
 
-app.get('/health', async (req: Request, res: Response) => {
+const runtimeMetadata = () => ({
+  timestamp: new Date().toISOString(),
+  environment: env.NODE_ENV,
+  version: process.env.npm_package_version || '1.0.0',
+});
+
+app.get('/health/live', (_req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'ok',
+    ...runtimeMetadata(),
+  });
+});
+
+const readinessHandler = async (_req: Request, res: Response) => {
   const checks: Record<string, string> = {};
 
-  // Database check
   try {
     const { prisma } = await import('./config/database');
     await prisma.$queryRaw`SELECT 1`;
@@ -100,16 +112,15 @@ app.get('/health', async (req: Request, res: Response) => {
   }
 
   const allHealthy = Object.values(checks).every(v => v === 'ok');
-  const status = allHealthy ? 'ok' : 'degraded';
-
   res.status(allHealthy ? 200 : 503).json({
-    status,
-    timestamp: new Date().toISOString(),
-    environment: env.NODE_ENV,
-    version: process.env.npm_package_version || '1.0.0',
+    status: allHealthy ? 'ok' : 'degraded',
+    ...runtimeMetadata(),
     checks,
   });
-});
+};
+
+app.get('/health', readinessHandler);
+app.get('/health/ready', readinessHandler);
 
 // =============================================
 // API ROUTES

@@ -47,6 +47,8 @@ Saída:
 
 ### P1 — Production Operations v1
 
+Status: 🟡 iniciado. [PRD](PRD-PRODUCTION-OPERATIONS-V1.md). PO-01 (health/readiness) em implementação; demais fases preservam exposição pública e billing desligados.
+
 Objetivo: tornar deploy e recuperação reproduzíveis fora da máquina local.
 
 Escopo:
