@@ -22,11 +22,12 @@
 
   <div class="filters-card">
     <div class="filter-field filter-field--search">
-      <label>{{ 'admin.products.searchPlaceholder' | translate }}</label>
+      <label for="productSearch">{{ 'admin.products.searchPlaceholder' | translate }}</label>
       <div class="search-control">
         <i class="pi pi-search"></i>
         <input
           pInputText
+          id="productSearch"
           [(ngModel)]="searchTerm"
           [placeholder]="'admin.products.searchPlaceholder' | translate"
           (keyup.enter)="onSearch()" />

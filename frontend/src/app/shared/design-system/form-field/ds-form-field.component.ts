@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges } from '@angular/core';
 
 @Component({
   selector: 'ds-form-field',
@@ -92,10 +92,37 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
     .ds-form-field__message--error { color: var(--error); }
   `]
 })
-export class DsFormFieldComponent {
+export class DsFormFieldComponent implements AfterViewInit, OnChanges {
   @Input({ required: true }) label = '';
   @Input() forId = '';
   @Input() hint = '';
   @Input() error = '';
   @Input() required = false;
+
+  private viewReady = false;
+
+  constructor(private readonly host: ElementRef<HTMLElement>) {}
+
+  ngAfterViewInit(): void {
+    this.viewReady = true;
+    queueMicrotask(() => this.syncAccessibleName());
+  }
+
+  ngOnChanges(): void {
+    if (this.viewReady) {
+      queueMicrotask(() => this.syncAccessibleName());
+    }
+  }
+
+  private syncAccessibleName(): void {
+    const control = this.host.nativeElement.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+      'input:not([type="hidden"]), textarea, select'
+    );
+
+    if (!control || control.labels?.length || control.hasAttribute('aria-label') || control.hasAttribute('aria-labelledby')) {
+      return;
+    }
+
+    control.setAttribute('aria-label', this.label);
+  }
 }

@@ -111,6 +111,7 @@
             </div>
             <p-toggleswitch
               [(ngModel)]="profileForm.notificationEmail"
+              [ariaLabel]="'client.profile.emailNotifications' | translate"
               (onChange)="saveProfile()" />
           </div>
 
@@ -121,6 +122,7 @@
             </div>
             <p-toggleswitch
               [(ngModel)]="profileForm.notificationWhatsapp"
+              [ariaLabel]="'client.profile.whatsappNotifications' | translate"
               (onChange)="saveProfile()" />
           </div>
         </div>
