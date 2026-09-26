@@ -1,6 +1,6 @@
 # PRD — Production Operations v1
 
-**Status:** 🟡 Em andamento — PO-01 iniciado.
+**Status:** 🟡 Em andamento — PO-01 concluído; PO-02 implementado com restore drill local aprovado; PO-03 é a próxima fase.
 **Base:** `5808bd2604579ae5288dc7c97b18fc842050cb2e`.
 **Data:** 2026-09-26.
 
@@ -35,6 +35,8 @@ Transformar o runtime hoje reproduzível no Coolify local em uma operação prep
 **Aceite:** liveness responde 200 com banco saudável ou indisponível; readiness responde 503 quando banco falha; compose usa readiness.
 
 ### PO-02 — Backup, restore drill e RPO/RTO
+
+**Status:** ✅ implementação e drill local concluídos. Operação durável em staging/production continua dependente do provisionamento desses ambientes. Ver [runbook](PRODUCTION-BACKUP-RESTORE-RUNBOOK.md).
 
 - script versionado de backup PostgreSQL em formato custom;
 - checksum SHA-256 e metadata do backup;
@@ -110,3 +112,17 @@ PO-01 a PO-04 podem avançar no ambiente local. PO-05/PO-06 dependem de infraest
 - healthchecks de Dockerfile e composes atualizados para `/health/ready`;
 - `/health` mantido como alias compatível de readiness;
 - a suíte `npm test` completa revelou 3 suites de integração legadas que não compilam por fixtures anteriores ao tenant obrigatório. O problema é preexistente e deve ser corrigido em trilha separada; os gates atuais de integração PostgreSQL do Security Hardening permanecem independentes e verdes.
+
+
+## Evidência PO-02 — backup e restore drill local
+
+- `ops/postgres-backup.sh`: dump PostgreSQL custom, SHA-256 portátil, metadata e retenção configurável;
+- `ops/postgres-restore-drill.sh`: checksum obrigatório, destino descartável com prefixo seguro, validação e cleanup automático;
+- backup final: 113.952 bytes em 1s, PostgreSQL 16.15;
+- restore drill: PASS em 1s;
+- validação: 26 tabelas públicas, 10 migrations concluídas, 1 tenant e 2 usuários;
+- nenhum banco `therapist_restore_drill_*` permaneceu após o teste;
+- banco ativo não foi sobrescrito nem recriado;
+- RPO alvo: <= 24h mediante agendamento no ambiente;
+- RTO operacional alvo: <= 4h; o tempo de 1s mede somente restore/verificação local, não recuperação end-to-end;
+- procedimento e guardrails: `docs/PRODUCTION-BACKUP-RESTORE-RUNBOOK.md`.
