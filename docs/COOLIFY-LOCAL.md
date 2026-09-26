@@ -70,6 +70,8 @@ Antes de adicionar uma regra HTTPS com `tailscale serve`, inspecione a configura
 
 Se o navegador acessar a aplicação por uma URL HTTPS do Tailscale, inclua a origem exata (esquema + host + porta) em `CORS_ALLOWED_ORIGINS`; não use wildcard. Exemplo: `https://host.tailnet.ts.net:7443`.
 
+Quando esse endereço Tailscale for o gateway compartilhado usado para acessar a aplicação, configure também `FRONTEND_URL` e `BACKEND_URL` com essa URL exata. O resolvedor multi-tenant usa os hosts dessas duas variáveis como allowlist de hosts compartilhados; CORS sozinho não autoriza resolução de tenant. Um host de gateway ausente dessa allowlist retorna `TENANT_NOT_FOUND`/404 por desenho de segurança.
+
 
 ## CI, E2E e deploy
 

@@ -109,7 +109,12 @@ Schema incidents use forward-fix by default. Full database restore follows `PROD
 - generated manifest contains version, full SHA, digest-pinned images, migration set and forward-fix policy;
 - rollback override generator produced only backend/frontend image overrides;
 - no database rollback command exists in the rollback artifact;
-- runtime smoke will be exercised after the PO-01 health/readiness changes are promoted to the local Coolify runtime.
+- migration deploy executed before promotion: PASS, 10 migrations found and no pending migration;
+- local Coolify promotion from merged `main`: PASS; backend/frontend healthy and database preserved;
+- gateway smoke after promotion: `/health/live`, `/health/ready`, tenant current and public settings PASS locally;
+- `/health/live` and `/health/ready` are proxied to backend and the smoke rejects SPA/non-JSON false positives;
+- Tailscale gateway health/readiness and tenant/public-settings endpoints: HTTP 200 after configuring the shared gateway host in `FRONTEND_URL`/`BACKEND_URL`;
+- local mutable `:local` tags demonstrated why previous release artifacts must be persisted in a registry by digest; registry-backed rollback remains a staging/production gate, not something to fake with `docker commit`.
 
 ## Exit criteria for PO-03
 
@@ -119,4 +124,4 @@ Schema incidents use forward-fix by default. Full database restore follows `PROD
 - mandatory smoke versioned;
 - rollback artifact limited to application images;
 - schema rollback policy explicitly forward-fix;
-- local runtime promotion/rollback evidence completed before PO-03 is marked fully closed.
+- local runtime promotion/smoke evidence completed; registry-backed rollback drill is required before production exposure.

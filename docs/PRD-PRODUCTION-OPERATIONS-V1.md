@@ -1,6 +1,6 @@
 # PRD — Production Operations v1
 
-**Status:** 🟡 Em andamento — PO-01 e PO-02 concluídos; PO-03 com contrato de release/rollback implementado e evidência de runtime pendente.
+**Status:** 🟡 Em andamento — PO-01 a PO-03 concluídos no escopo local; PO-04 (observabilidade e alertas) é a próxima fase. Rollback por registry/digest permanece gate de staging/production.
 **Base:** `5808bd2604579ae5288dc7c97b18fc842050cb2e`.
 **Data:** 2026-09-26.
 
@@ -50,7 +50,7 @@ Transformar o runtime hoje reproduzível no Coolify local em uma operação prep
 
 ### PO-03 — Release e rollback operacional
 
-**Status:** 🟡 contrato implementado; smoke/promoção local após merge. Ver [runbook](PRODUCTION-RELEASE-ROLLBACK-RUNBOOK.md).
+**Status:** ✅ escopo local concluído: contrato, migration-before-promotion e smoke real aprovados. Rollback por registry/digest será exercitado em staging antes de produção. Ver [runbook](PRODUCTION-RELEASE-ROLLBACK-RUNBOOK.md).
 
 - convenção SemVer/tag;
 - release manifest com SHA, migration set e imagens;
