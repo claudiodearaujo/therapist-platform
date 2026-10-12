@@ -18,10 +18,11 @@ jobs:
       - name: Update compatible vulnerable dependencies
         shell: bash
         run: |
-          set -uo pipefail
+          set -euo pipefail
           for dir in backend frontend; do
             echo "::group::Audit fix for $dir"
-            (cd "$dir" && npm install --package-lock-only --ignore-scripts --legacy-peer-deps && npm audit fix --package-lock-only --ignore-scripts --legacy-peer-deps) || true
+            (cd "$dir" && npm install --package-lock-only --ignore-scripts --legacy-peer-deps)
+            (cd "$dir" && npm audit fix --package-lock-only --ignore-scripts --legacy-peer-deps) || echo "Audit still reports findings for $dir"
             echo "::endgroup::"
           done
       - name: Commit compatible fixes
