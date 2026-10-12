@@ -1,25 +1,26 @@
+import { vi, type Mocked } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { StorageService } from './storage.service';
 
 describe('StorageService', () => {
   let service: StorageService;
-  let localStorageSpy: jasmine.SpyObj<Storage>;
+  let localStorageSpy: Mocked<Storage>;
 
   beforeEach(() => {
     // Create spy for localStorage
     const store: { [key: string]: string } = {};
-    localStorageSpy = jasmine.createSpyObj('localStorage', ['getItem', 'setItem', 'removeItem', 'clear']);
+    localStorageSpy = { 'getItem': vi.fn(), 'setItem': vi.fn(), 'removeItem': vi.fn(), 'clear': vi.fn() } as unknown as Mocked<Storage>;
     
-    localStorageSpy.getItem.and.callFake((key: string) => store[key] || null);
-    localStorageSpy.setItem.and.callFake((key: string, value: string) => {
+    localStorageSpy.getItem.mockImplementation((key: string) => store[key] || null);
+    localStorageSpy.setItem.mockImplementation((key: string, value: string) => {
       store[key] = value;
     });
-    localStorageSpy.removeItem.and.callFake((key: string) => {
+    localStorageSpy.removeItem.mockImplementation((key: string) => {
       delete store[key];
     });
 
     // Replace window.localStorage
-    spyOnProperty(window, 'localStorage', 'get').and.returnValue(localStorageSpy);
+    vi.spyOn(window, 'localStorage', 'get').mockReturnValue(localStorageSpy);
 
     TestBed.configureTestingModule({
       providers: [StorageService],
@@ -53,26 +54,26 @@ describe('StorageService', () => {
 
   describe('get', () => {
     it('should retrieve and parse stored value', () => {
-      localStorageSpy.getItem.and.returnValue('"storedValue"');
+      localStorageSpy.getItem.mockReturnValue('"storedValue"');
       const result = service.get<string>('testKey');
       expect(result).toBe('storedValue');
     });
 
     it('should retrieve and parse stored object', () => {
       const obj = { name: 'Test', value: 123 };
-      localStorageSpy.getItem.and.returnValue(JSON.stringify(obj));
+      localStorageSpy.getItem.mockReturnValue(JSON.stringify(obj));
       const result = service.get<typeof obj>('objKey');
       expect(result).toEqual(obj);
     });
 
     it('should return null for non-existent key', () => {
-      localStorageSpy.getItem.and.returnValue(null);
+      localStorageSpy.getItem.mockReturnValue(null);
       const result = service.get('nonExistent');
       expect(result).toBeNull();
     });
 
     it('should handle invalid JSON gracefully', () => {
-      localStorageSpy.getItem.and.returnValue('invalid json {');
+      localStorageSpy.getItem.mockReturnValue('invalid json {');
       const result = service.get('badKey');
       expect(result).toBeNull();
     });
@@ -94,13 +95,13 @@ describe('StorageService', () => {
 
   describe('has', () => {
     it('should return true if key exists', () => {
-      localStorageSpy.getItem.and.returnValue('"value"');
-      expect(service.has('existingKey')).toBeTrue();
+      localStorageSpy.getItem.mockReturnValue('"value"');
+      expect(service.has('existingKey')).toBe(true);
     });
 
     it('should return false if key does not exist', () => {
-      localStorageSpy.getItem.and.returnValue(null);
-      expect(service.has('nonExistent')).toBeFalse();
+      localStorageSpy.getItem.mockReturnValue(null);
+      expect(service.has('nonExistent')).toBe(false);
     });
   });
 });

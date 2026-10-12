@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ProductCardComponent } from './product-card.component';
@@ -46,17 +47,17 @@ describe('ProductCardComponent', () => {
   describe('hasDiscount', () => {
     it('should return false when no original price', () => {
       component.product = { ...mockProduct, originalPrice: undefined };
-      expect(component.hasDiscount).toBeFalse();
+      expect(component.hasDiscount).toBe(false);
     });
 
     it('should return false when original price equals current price', () => {
       component.product = { ...mockProduct, originalPrice: 99.90 };
-      expect(component.hasDiscount).toBeFalse();
+      expect(component.hasDiscount).toBe(false);
     });
 
     it('should return true when original price is greater than current price', () => {
       component.product = { ...mockProduct, price: 79.90, originalPrice: 99.90 };
-      expect(component.hasDiscount).toBeTrue();
+      expect(component.hasDiscount).toBe(true);
     });
   });
 
@@ -80,10 +81,10 @@ describe('ProductCardComponent', () => {
 
   describe('onAddToCart', () => {
     it('should emit addToCart event with product', () => {
-      spyOn(component.addToCart, 'emit');
+      vi.spyOn(component.addToCart, 'emit');
       const event = new MouseEvent('click');
-      spyOn(event, 'preventDefault');
-      spyOn(event, 'stopPropagation');
+      vi.spyOn(event, 'preventDefault');
+      vi.spyOn(event, 'stopPropagation');
 
       component.onAddToCart(event);
 

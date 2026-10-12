@@ -1,3 +1,4 @@
+import { vi, type Mocked } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
@@ -8,8 +9,8 @@ import { environment } from '../../../environments/environment';
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
-  let storageServiceSpy: jasmine.SpyObj<StorageService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let storageServiceSpy: Mocked<StorageService>;
+  let routerSpy: Mocked<Router>;
 
   const mockUser = {
     id: 'user-123',
@@ -33,11 +34,11 @@ describe('AuthService', () => {
   };
 
   beforeEach(() => {
-    storageServiceSpy = jasmine.createSpyObj('StorageService', ['get', 'set', 'remove']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    storageServiceSpy = { 'get': vi.fn(), 'set': vi.fn(), 'remove': vi.fn() } as unknown as Mocked<StorageService>;
+    routerSpy = { 'navigate': vi.fn() } as unknown as Mocked<Router>;
 
     // Return null initially for stored data
-    storageServiceSpy.get.and.returnValue(null);
+    storageServiceSpy.get.mockReturnValue(null);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -65,7 +66,7 @@ describe('AuthService', () => {
       const loginData = { email: 'test@example.com', password: 'Password123!' };
 
       service.login(loginData).subscribe((response) => {
-        expect(response.success).toBeTrue();
+        expect(response.success).toBe(true);
         expect(response.data.user.email).toBe(loginData.email);
       });
 
@@ -76,7 +77,7 @@ describe('AuthService', () => {
 
       expect(service.currentUser()).toEqual(mockUser);
       expect(service.getAccessToken()).toBe('mock-access-token');
-      expect(service.isAuthenticated()).toBeTrue();
+      expect(service.isAuthenticated()).toBe(true);
       expect(storageServiceSpy.set).not.toHaveBeenCalled();
     });
   });
@@ -91,7 +92,7 @@ describe('AuthService', () => {
       };
 
       service.register(registerData).subscribe((response) => {
-        expect(response.success).toBeTrue();
+        expect(response.success).toBe(true);
       });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/register`);
@@ -100,7 +101,7 @@ describe('AuthService', () => {
 
       expect(service.currentUser()).toEqual(mockUser);
       expect(service.getAccessToken()).toBe('mock-access-token');
-      expect(service.isAuthenticated()).toBeTrue();
+      expect(service.isAuthenticated()).toBe(true);
       expect(storageServiceSpy.set).not.toHaveBeenCalled();
     });
   });
@@ -110,7 +111,7 @@ describe('AuthService', () => {
       const email = 'test@example.com';
 
       service.forgotPassword(email).subscribe((response) => {
-        expect(response.success).toBeTrue();
+        expect(response.success).toBe(true);
       });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/forgot-password`);
@@ -126,7 +127,7 @@ describe('AuthService', () => {
       const password = 'NewPassword123!';
 
       service.resetPassword(token, password).subscribe((response) => {
-        expect(response.success).toBeTrue();
+        expect(response.success).toBe(true);
       });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/reset-password`);
@@ -158,20 +159,20 @@ describe('AuthService', () => {
 
   describe('isAuthenticated', () => {
     it('should return false when no user', () => {
-      expect(service.isAuthenticated()).toBeFalse();
+      expect(service.isAuthenticated()).toBe(false);
     });
   });
 
   describe('isAdmin', () => {
     it('should return false when no user', () => {
-      expect(service.isAdmin()).toBeFalse();
+      expect(service.isAdmin()).toBe(false);
     });
   });
 
   describe('loadStoredUser', () => {
     it('should start without authenticated user when no user in storage', () => {
-      storageServiceSpy.get.and.returnValue(null);
-      expect(service.isAuthenticated()).toBeFalse();
+      storageServiceSpy.get.mockReturnValue(null);
+      expect(service.isAuthenticated()).toBe(false);
       expect(service.currentUser()).toBeNull();
     });
   });

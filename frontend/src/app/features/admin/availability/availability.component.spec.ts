@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { vi, type Mocked } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
@@ -58,17 +59,14 @@ const mockBusinessHours: BusinessHour[] = [
 describe('AdminAvailabilityComponent', () => {
   let component: AdminAvailabilityComponent;
   let fixture: ComponentFixture<AdminAvailabilityComponent>;
-  let settingsServiceSpy: jasmine.SpyObj<SettingsService>;
-  let notificationSpy: jasmine.SpyObj<NotificationService>;
+  let settingsServiceSpy: Mocked<SettingsService>;
+  let notificationSpy: Mocked<NotificationService>;
 
   beforeEach(async () => {
-    settingsServiceSpy = jasmine.createSpyObj('SettingsService', [
-      'getBusinessHours',
-      'updateBusinessHours',
-    ]);
-    notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error']);
+    settingsServiceSpy = { 'getBusinessHours': vi.fn(), 'updateBusinessHours': vi.fn() } as unknown as Mocked<SettingsService>;
+    notificationSpy = { 'success': vi.fn(), 'error': vi.fn() } as unknown as Mocked<NotificationService>;
 
-    settingsServiceSpy.getBusinessHours.and.returnValue(
+    settingsServiceSpy.getBusinessHours.mockReturnValue(
       of({ data: mockBusinessHours })
     );
 
@@ -98,20 +96,20 @@ describe('AdminAvailabilityComponent', () => {
 
   it('should load settings on init', () => {
     expect(settingsServiceSpy.getBusinessHours).toHaveBeenCalled();
-    expect(component.loading()).toBeFalse();
+    expect(component.loading()).toBe(false);
   });
 
   it('should map business hours to weekday config', () => {
     const monday = component.scheduleSettings.weekdays.find(w => w.day === 'monday');
     expect(monday).toBeDefined();
-    expect(monday!.enabled).toBeTrue();
+    expect(monday!.enabled).toBe(true);
     expect(monday!.startTime).toBe('08:00');
     expect(monday!.endTime).toBe('17:00');
   });
 
   it('should set disabled days correctly', () => {
     const saturday = component.scheduleSettings.weekdays.find(w => w.day === 'saturday');
-    expect(saturday!.enabled).toBeFalse();
+    expect(saturday!.enabled).toBe(false);
   });
 
   it('should use labelKey for day names', () => {
@@ -130,29 +128,29 @@ describe('AdminAvailabilityComponent', () => {
     expect(component.scheduleSettings.minNoticeHours).toBe(24);
   });
 
-  it('should handle error when loading settings', fakeAsync(() => {
-    settingsServiceSpy.getBusinessHours.and.returnValue(throwError(() => new Error('HTTP error')));
+  it('should handle error when loading settings', async () => {
+    settingsServiceSpy.getBusinessHours.mockReturnValue(throwError(() => new Error('HTTP error')));
     component.loadSettings();
-    tick();
-    expect(component.loading()).toBeFalse();
-  }));
+    await Promise.resolve();
+    expect(component.loading()).toBe(false);
+  });
 
-  it('should call updateBusinessHours on save', fakeAsync(() => {
-    settingsServiceSpy.updateBusinessHours.and.returnValue(
+  it('should call updateBusinessHours on save', async () => {
+    settingsServiceSpy.updateBusinessHours.mockReturnValue(
       of({ data: mockBusinessHours })
     );
     component.saveSettings();
-    tick();
+    await Promise.resolve();
     expect(settingsServiceSpy.updateBusinessHours).toHaveBeenCalled();
     expect(notificationSpy.success).toHaveBeenCalled();
-    expect(component.saving()).toBeFalse();
-  }));
+    expect(component.saving()).toBe(false);
+  });
 
-  it('should handle error when saving settings', fakeAsync(() => {
-    settingsServiceSpy.updateBusinessHours.and.returnValue(throwError(() => new Error('HTTP error')));
+  it('should handle error when saving settings', async () => {
+    settingsServiceSpy.updateBusinessHours.mockReturnValue(throwError(() => new Error('HTTP error')));
     component.saveSettings();
-    tick();
+    await Promise.resolve();
     expect(notificationSpy.error).toHaveBeenCalled();
-    expect(component.saving()).toBeFalse();
-  }));
+    expect(component.saving()).toBe(false);
+  });
 });

@@ -1,3 +1,4 @@
+import { vi, type Mocked } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { PublicSettingsStore, DEFAULT_PUBLIC_SETTINGS } from './public-settings.store';
@@ -5,10 +6,10 @@ import { SettingsService } from './settings.service';
 
 describe('PublicSettingsStore', () => {
   let store: PublicSettingsStore;
-  let settingsService: jasmine.SpyObj<SettingsService>;
+  let settingsService: Mocked<SettingsService>;
 
   beforeEach(() => {
-    settingsService = jasmine.createSpyObj<SettingsService>('SettingsService', ['getPublicSettings']);
+    settingsService = { 'getPublicSettings': vi.fn() } as unknown as Mocked<SettingsService>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -21,7 +22,7 @@ describe('PublicSettingsStore', () => {
   });
 
   it('should cache the public settings request', () => {
-    settingsService.getPublicSettings.and.returnValue(of({
+    settingsService.getPublicSettings.mockReturnValue(of({
       data: {
         ...DEFAULT_PUBLIC_SETTINGS,
         siteName: 'Minha Marca',
@@ -36,7 +37,7 @@ describe('PublicSettingsStore', () => {
   });
 
   it('should merge nested defaults with configured values', () => {
-    settingsService.getPublicSettings.and.returnValue(of({
+    settingsService.getPublicSettings.mockReturnValue(of({
       data: {
         ...DEFAULT_PUBLIC_SETTINGS,
         siteName: 'Minha Marca',
@@ -69,7 +70,7 @@ describe('PublicSettingsStore', () => {
   });
 
   it('should resolve enabled specialty modules', () => {
-    settingsService.getPublicSettings.and.returnValue(of({
+    settingsService.getPublicSettings.mockReturnValue(of({
       data: {
         ...DEFAULT_PUBLIC_SETTINGS,
         enabledModules: ['tarot-cards'],
@@ -78,18 +79,18 @@ describe('PublicSettingsStore', () => {
     } as any));
 
     store.isModuleEnabled('tarot-cards').subscribe((enabled) => {
-      expect(enabled).toBeTrue();
+      expect(enabled).toBe(true);
     });
 
     store.isModuleEnabled('unknown-module').subscribe((enabled) => {
-      expect(enabled).toBeFalse();
+      expect(enabled).toBe(false);
     });
 
     expect(settingsService.getPublicSettings).toHaveBeenCalledTimes(1);
   });
 
   it('should fall back to neutral defaults when the API fails', () => {
-    settingsService.getPublicSettings.and.returnValue(
+    settingsService.getPublicSettings.mockReturnValue(
       throwError(() => new Error('network'))
     );
 

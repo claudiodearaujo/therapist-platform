@@ -147,7 +147,7 @@ describe('TestimonialsService', () => {
       const mockResponse = { data: { ...mockTestimonial, isApproved: true }, success: true };
 
       service.update('1', { isApproved: true }).subscribe(response => {
-        expect(response.data.isApproved).toBeTrue();
+        expect(response.data.isApproved).toBe(true);
       });
 
       const req = httpMock.expectOne('/api/admin/testimonials/1');

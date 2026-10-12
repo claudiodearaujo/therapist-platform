@@ -1,13 +1,14 @@
+import { vi, type Mocked } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { NotificationService } from './notification.service';
 import { MessageService } from 'primeng/api';
 
 describe('NotificationService', () => {
   let service: NotificationService;
-  let messageServiceSpy: jasmine.SpyObj<MessageService>;
+  let messageServiceSpy: Mocked<MessageService>;
 
   beforeEach(() => {
-    messageServiceSpy = jasmine.createSpyObj('MessageService', ['add', 'clear']);
+    messageServiceSpy = { 'add': vi.fn(), 'clear': vi.fn() } as unknown as Mocked<MessageService>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -99,25 +100,25 @@ describe('NotificationService', () => {
 
   describe('aliases', () => {
     it('success should call showSuccess', () => {
-      spyOn(service, 'showSuccess');
+      vi.spyOn(service, 'showSuccess');
       service.success('Mensagem', 'Título');
       expect(service.showSuccess).toHaveBeenCalledWith('Mensagem', 'Título');
     });
 
     it('error should call showError', () => {
-      spyOn(service, 'showError');
+      vi.spyOn(service, 'showError');
       service.error('Mensagem');
       expect(service.showError).toHaveBeenCalledWith('Mensagem', undefined);
     });
 
     it('warning should call showWarning', () => {
-      spyOn(service, 'showWarning');
+      vi.spyOn(service, 'showWarning');
       service.warning('Mensagem');
       expect(service.showWarning).toHaveBeenCalledWith('Mensagem', undefined);
     });
 
     it('info should call showInfo', () => {
-      spyOn(service, 'showInfo');
+      vi.spyOn(service, 'showInfo');
       service.info('Mensagem');
       expect(service.showInfo).toHaveBeenCalledWith('Mensagem', undefined);
     });
