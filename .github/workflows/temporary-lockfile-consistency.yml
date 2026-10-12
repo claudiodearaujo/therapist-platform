@@ -1,0 +1,34 @@
+name: Temporary lockfile consistency repair
+on:
+  push:
+    branches: [fix/dependency-security-audit-20261012]
+permissions:
+  contents: write
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reconcile npm peer dependencies and validate clean install
+        shell: bash
+        run: |
+          set -euo pipefail
+          for dir in backend frontend; do
+            echo "::group::$dir"
+            (cd "$dir" && npm install --package-lock-only --ignore-scripts --no-audit --no-fund)
+            (cd "$dir" && npm ci --ignore-scripts --no-audit --no-fund)
+            echo "::endgroup::"
+          done
+      - name: Commit corrected lockfiles
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/package-lock.json frontend/package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m "fix(deps): reconcile peer dependency lockfile entries"
+            git push origin HEAD:fix/dependency-security-audit-20261012
+          fi
