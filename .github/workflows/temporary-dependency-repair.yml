@@ -21,7 +21,7 @@ jobs:
           set -uo pipefail
           for dir in backend frontend; do
             echo "::group::Audit fix for $dir"
-            (cd "$dir" && npm audit fix --package-lock-only --ignore-scripts) || true
+            (cd "$dir" && npm install --package-lock-only --ignore-scripts && npm audit fix --package-lock-only --ignore-scripts) || true
             echo "::endgroup::"
           done
       - name: Commit compatible fixes
