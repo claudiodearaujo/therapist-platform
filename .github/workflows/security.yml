@@ -80,6 +80,17 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: backend/package-lock.json
+      - name: Validate local and explicit Supabase compose configurations
+        run: |
+          docker compose -f docker-compose.coolify.yml config --quiet
+          docker compose -f docker-compose.coolify.yml -f deploy/docker-compose.supabase.yml config --quiet
+          docker compose -f deploy/docker-compose.coolify.runtime.yml -f deploy/docker-compose.supabase.yml config --quiet
+        env:
+          POSTGRES_PASSWORD: ci
+          SERVICE_PASSWORD_64_POSTGRES: ci
+          SERVICE_PASSWORD_64_JWT: synthetic-test-jwt-secret
+          SERVICE_PASSWORD_64_REFRESH: synthetic-test-refresh-secret
+          DIRECT_URL: postgresql://ci:ci@127.0.0.1:5432/therapist_security_test
       - run: npm ci
         working-directory: backend
       - run: npm run build

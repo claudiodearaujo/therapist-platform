@@ -44,3 +44,5 @@ O bucket público destina-se a imagens de produtos e avatares. Áudios de entreg
 CI valida migrações em PostgreSQL descartável, RLS e grants para roles equivalentes aos da Data API, isolamento HTTP entre tenants, sessões e testes do Storage com respostas simuladas. Não comprova conectividade, políticas ou backups do projeto Supabase real. Permanecem operacionais: backup final, ensaio com dados autorizados, verificação do projeto remoto, transferência dos arquivos e autorização de corte.
 
 Referências consultadas: [Prisma](https://supabase.com/docs/guides/database/prisma), [proteção da Data API](https://supabase.com/docs/guides/api/securing-your-api), [acesso ao Storage](https://supabase.com/docs/guides/storage/security/access-control).
+
+Prisma CLI, client e adaptador pg estão fixados em 7.10.0 para manter geração e execução alinhadas.
