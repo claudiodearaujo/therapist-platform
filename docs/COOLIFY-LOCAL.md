@@ -87,3 +87,7 @@ Sem essas variáveis, o job é ignorado e não mascara os gates de build/unit.
 Para validar o ambiente local, execute o Playwright a partir de uma máquina conectada à tailnet usando a URL publicada do Therapist Platform.
 
 Os workflows legados de deploy automático no Render foram removidos. O destino ativo deste ambiente é o Coolify local. A automação remota de deploy deverá ser reintroduzida apenas quando existir um runner/webhook autorizado capaz de alcançar o Coolify sem expor a tailnet publicamente.
+
+## Supabase opcional
+
+A ativação usa o overlay em deploy/docker-compose.supabase.yml e exige o roteiro de backup, restauração e autorização em [SUPABASE-CUTOVER.md](SUPABASE-CUTOVER.md). O compose base mantém o PostgreSQL e o volume locais; o merge não realiza a troca de banco.

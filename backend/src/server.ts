@@ -5,7 +5,7 @@ import { initSentry } from './config/sentry';
 initSentry();
 
 import app from './app';
-import { env, connectDatabase, disconnectDatabase } from './config';
+import { env, connectDatabase, disconnectDatabase, ensureStorageBuckets } from './config';
 
 // =============================================
 // START SERVER
@@ -15,6 +15,9 @@ async function bootstrap() {
   try {
     // Connect to database
     await connectDatabase();
+
+    // Provision required Supabase Storage buckets on fresh projects.
+    if (env.SUPABASE_STORAGE_INIT) await ensureStorageBuckets();
 
     // Start HTTP server
     const server = app.listen(env.PORT, () => {

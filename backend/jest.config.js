@@ -30,7 +30,7 @@ module.exports = {
       ...baseConfig,
       displayName: 'unit',
       rootDir: '.',
-      testMatch: ['**/src/modules/**/*.spec.ts'],
+      testMatch: ['**/src/modules/**/*.spec.ts', '**/src/config/**/*.spec.ts'],
       setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
       testPathIgnorePatterns: ['/node_modules/', '/integration/'],
       testTimeout: 10000,
