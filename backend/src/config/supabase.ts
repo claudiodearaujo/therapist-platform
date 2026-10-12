@@ -21,6 +21,38 @@ export const supabaseClient: SupabaseClient = createClient(
   env.SUPABASE_ANON_KEY
 );
 
+/**
+ * Ensure the Storage buckets required by the application exist.
+ * This is intentionally idempotent and uses the official Storage API so a
+ * fresh Supabase project can be provisioned safely during application startup.
+ */
+export async function ensureStorageBuckets(): Promise<void> {
+  const { data: buckets, error: listError } = await supabaseAdmin.storage.listBuckets();
+  if (listError) {
+    throw new Error(`Supabase Storage unavailable: ${listError.message}`);
+  }
+
+  const existing = new Set((buckets ?? []).map((bucket) => bucket.name));
+
+  if (!existing.has(env.SUPABASE_STORAGE_BUCKET)) {
+    const { error } = await supabaseAdmin.storage.createBucket(env.SUPABASE_STORAGE_BUCKET, {
+      public: true,
+    });
+    if (error) {
+      throw new Error(`Failed to create public Storage bucket: ${error.message}`);
+    }
+  }
+
+  if (!existing.has(env.SUPABASE_PRIVATE_STORAGE_BUCKET)) {
+    const { error } = await supabaseAdmin.storage.createBucket(env.SUPABASE_PRIVATE_STORAGE_BUCKET, {
+      public: false,
+    });
+    if (error) {
+      throw new Error(`Failed to create private Storage bucket: ${error.message}`);
+    }
+  }
+}
+
 // Storage helper functions
 export const storage = {
   bucket: env.SUPABASE_STORAGE_BUCKET,
