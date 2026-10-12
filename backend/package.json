@@ -58,7 +58,7 @@
     "nodemailer": "10.0.10",
     "pdfkit": "^0.15.2",
     "pg": "^8.16.3",
-    "sharp": "0.35.4",
+    "sharp": "0.35.5",
     "stripe": "^20.1.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
@@ -78,6 +78,7 @@
   },
   "overrides": {
     "deepmerge-ts": "8.0.0",
-    "mysql2": "3.24.4"
+    "mysql2": "3.24.4",
+    "braces": "^3.0.4"
   }
 }
