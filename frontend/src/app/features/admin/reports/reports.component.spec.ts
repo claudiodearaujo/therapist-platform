@@ -92,7 +92,7 @@ describe('AdminReportsComponent', () => {
       of({ data: mockTopProducts })
     );
 
-    TestBed.overrideComponent(ReportsComponent, { remove: { imports: [ChartModule] }, add: { imports: [ChartStubComponent] } });
+    TestBed.overrideComponent(AdminReportsComponent, { remove: { imports: [ChartModule] }, add: { imports: [ChartStubComponent] } });
     await TestBed.configureTestingModule({
       imports: [
         AdminReportsComponent,

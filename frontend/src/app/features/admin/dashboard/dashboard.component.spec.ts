@@ -98,7 +98,7 @@ describe('AdminDashboardComponent', () => {
     );
     readingsServiceSpy.findAll.mockReturnValue(of({ data: [], meta: { total: 0, page: 1, limit: 5, totalPages: 0 } }));
 
-    TestBed.overrideComponent(DashboardComponent, { remove: { imports: [ChartModule] }, add: { imports: [ChartStubComponent] } });
+    TestBed.overrideComponent(AdminDashboardComponent, { remove: { imports: [ChartModule] }, add: { imports: [ChartStubComponent] } });
     await TestBed.configureTestingModule({
       imports: [
         AdminDashboardComponent,
