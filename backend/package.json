@@ -4,7 +4,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "prisma generate && tsc",
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev": "tsx watch src/server.ts",
     "build:generate": "prisma generate && tsc",
     "start": "node dist/server.js",
     "prisma:generate": "prisma generate",
@@ -74,7 +74,7 @@
     "jest-mock-extended": "^4.0.0",
     "prisma": "^7.3.0",
     "ts-jest": "^29.4.6",
-    "ts-node-dev": "^2.0.0"
+    "tsx": "^4.20.6"
   },
   "overrides": {
     "deepmerge-ts": "8.0.0",
