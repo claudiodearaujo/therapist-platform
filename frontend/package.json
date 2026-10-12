@@ -42,7 +42,7 @@
     "postcss-cli": "^11.0.1",
     "primeicons": "^7.0.0",
     "primeng": "^20.4.0",
-    "quill": "^2.0.3",
+    "quill": "2.0.2",
     "rxjs": "~7.8.0",
     "tailwindcss": "^4.1.18",
     "tailwindcss-primeui": "^0.6.1",
@@ -62,5 +62,8 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.8.2"
+  },
+  "overrides": {
+    "braces": "^3.0.4"
   }
 }
