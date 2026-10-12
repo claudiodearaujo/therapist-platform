@@ -27,29 +27,26 @@ export const supabaseClient: SupabaseClient = createClient(
  * fresh Supabase project can be provisioned safely during application startup.
  */
 export async function ensureStorageBuckets(): Promise<void> {
+  const required = [
+    { name: env.SUPABASE_STORAGE_BUCKET, public: true },
+    { name: env.SUPABASE_PRIVATE_STORAGE_BUCKET, public: false },
+  ];
+  if (!required[0].name || !required[1].name || required[0].name === required[1].name) {
+    throw new Error('Public and private Storage buckets must have distinct names');
+  }
   const { data: buckets, error: listError } = await supabaseAdmin.storage.listBuckets();
-  if (listError) {
-    throw new Error(`Supabase Storage unavailable: ${listError.message}`);
-  }
-
-  const existing = new Set((buckets ?? []).map((bucket) => bucket.name));
-
-  if (!existing.has(env.SUPABASE_STORAGE_BUCKET)) {
-    const { error } = await supabaseAdmin.storage.createBucket(env.SUPABASE_STORAGE_BUCKET, {
-      public: true,
-    });
-    if (error) {
-      throw new Error(`Failed to create public Storage bucket: ${error.message}`);
+  if (listError || !buckets) throw new Error('Supabase Storage unavailable');
+  for (const bucket of required) {
+    let existing = buckets.find(item => item.id === bucket.name);
+    if (!existing) {
+      const { error: createError } = await supabaseAdmin.storage.createBucket(bucket.name, { public: bucket.public });
+      // Read back even after a duplicate error: another instance can provision concurrently.
+      const { data, error } = await supabaseAdmin.storage.getBucket(bucket.name);
+      if (error || !data) throw new Error(createError ? 'Storage bucket provisioning failed' : 'Storage bucket verification failed');
+      existing = data;
     }
-  }
-
-  if (!existing.has(env.SUPABASE_PRIVATE_STORAGE_BUCKET)) {
-    const { error } = await supabaseAdmin.storage.createBucket(env.SUPABASE_PRIVATE_STORAGE_BUCKET, {
-      public: false,
-    });
-    if (error) {
-      throw new Error(`Failed to create private Storage bucket: ${error.message}`);
-    }
+    // Never make an existing bucket public or trust a private bucket's name alone.
+    if (existing.public !== bucket.public) throw new Error('Storage bucket visibility mismatch');
   }
 }
 

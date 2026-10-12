@@ -84,9 +84,15 @@ jobs:
         working-directory: backend
       - run: npm run build
         working-directory: backend
+      - name: Simulate Supabase Data API roles in disposable PostgreSQL
+        run: node scripts/supabase-security.cjs prepare
+        working-directory: backend
       - run: npx prisma migrate deploy
         working-directory: backend
       - run: node scripts/security-integration.cjs
+        working-directory: backend
+      - name: Verify Supabase Data API isolation
+        run: node scripts/supabase-security.cjs verify
         working-directory: backend
       - name: Database integration tests (disposable CI database)
         run: npm run test:integration -- --ci --runInBand

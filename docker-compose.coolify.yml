@@ -1,19 +1,36 @@
 name: therapist-platform-local
 
 services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: therapist_platform
+      POSTGRES_USER: therapist_platform
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - therapist-platform-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U therapist_platform -d therapist_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - therapist-platform
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       NODE_ENV: development
       PORT: "3000"
       API_PREFIX: /api
-
-      # Supabase managed PostgreSQL. Keep the real secret only in the Coolify/.env environment.
-      # Prisma runs `migrate deploy` on container startup and records `_prisma_migrations` normally.
-      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      DATABASE_URL: postgresql://therapist_platform:${POSTGRES_PASSWORD}@db:5432/therapist_platform?schema=public
 
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       JWT_EXPIRES_IN: 15m
@@ -25,11 +42,12 @@ services:
       TRUST_PROXY_CIDRS: ${TRUST_PROXY_CIDRS:-}
       BACKEND_URL: ${BACKEND_URL:-http://localhost:18080}
 
-      SUPABASE_URL: ${SUPABASE_URL:?SUPABASE_URL is required}
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?SUPABASE_SERVICE_ROLE_KEY is required}
-      SUPABASE_PRIVATE_STORAGE_BUCKET: ${SUPABASE_PRIVATE_STORAGE_BUCKET:-therapist-private}
-      SUPABASE_STORAGE_BUCKET: ${SUPABASE_STORAGE_BUCKET:-therapist-platform}
+      # Optional integrations. Defaults allow local boot; operations that use
+      # these providers require real local/test credentials.
+      SUPABASE_URL: ${SUPABASE_URL:-http://127.0.0.1:54321}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-local-anon-key}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-local-service-role-key}
+      SUPABASE_STORAGE_BUCKET: ${SUPABASE_STORAGE_BUCKET:-therapist-platform-local}
 
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_local_placeholder}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_local_placeholder}
@@ -78,6 +96,10 @@ services:
       retries: 10
     networks:
       - therapist-platform
+
+volumes:
+  therapist-platform-db:
+    name: therapist-platform-local-db
 
 networks:
   therapist-platform:

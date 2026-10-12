@@ -17,7 +17,7 @@ async function bootstrap() {
     await connectDatabase();
 
     // Provision required Supabase Storage buckets on fresh projects.
-    await ensureStorageBuckets();
+    if (env.SUPABASE_STORAGE_INIT) await ensureStorageBuckets();
 
     // Start HTTP server
     const server = app.listen(env.PORT, () => {

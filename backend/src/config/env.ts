@@ -29,6 +29,7 @@ export const env = {
   SESSION_TTL_DAYS: 7,
 
   // Supabase
+  SUPABASE_STORAGE_INIT: process.env.SUPABASE_STORAGE_INIT === 'true',
   SUPABASE_URL: process.env.SUPABASE_URL || '',
   SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
