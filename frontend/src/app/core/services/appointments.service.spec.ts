@@ -52,7 +52,7 @@ describe('AppointmentsService', () => {
 
       service.getAvailableSlots(date).subscribe(response => {
         expect(response.data).toEqual([mockTimeSlot]);
-        expect(response.data[0].available).toBeTrue();
+        expect(response.data[0].available).toBe(true);
       });
 
       const req = httpMock.expectOne(req =>

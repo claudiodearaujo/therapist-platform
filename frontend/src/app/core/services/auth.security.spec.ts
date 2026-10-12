@@ -1,3 +1,4 @@
+import { vi, type Mocked } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { firstValueFrom, of } from 'rxjs';
@@ -6,16 +7,16 @@ import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 
 describe('Auth security contract', () => {
-  let api: jasmine.SpyObj<ApiService>;
-  let storage: jasmine.SpyObj<StorageService>;
+  let api: Mocked<ApiService>;
+  let storage: Mocked<StorageService>;
   let service: AuthService;
   const data = { user: { id: 'synthetic' }, membership: { role: 'OWNER' }, accessToken: 'access' } as any;
   beforeEach(() => {
-    api = jasmine.createSpyObj('ApiService', ['post', 'get']);
-    storage = jasmine.createSpyObj('StorageService', ['get', 'set', 'remove']);
+    api = { 'post': vi.fn(), 'get': vi.fn() } as unknown as Mocked<ApiService>;
+    storage = { 'get': vi.fn(), 'set': vi.fn(), 'remove': vi.fn() } as unknown as Mocked<StorageService>;
     TestBed.configureTestingModule({ providers: [AuthService,
       { provide: ApiService, useValue: api }, { provide: StorageService, useValue: storage },
-      { provide: Router, useValue: { navigate: jasmine.createSpy('navigate') } },
+      { provide: Router, useValue: { navigate: vi.fn() } },
     ] });
     service = TestBed.inject(AuthService);
   });
@@ -26,17 +27,18 @@ describe('Auth security contract', () => {
     expect(storage.remove).toHaveBeenCalledWith('accessToken');
   });
   it('refreshes the profile without persisting personal data', () => {
-    api.get.and.returnValue(of({ data: data.user }));
+    api.get.mockReturnValue(of({ data: data.user }));
     service.refreshProfile();
     expect(service.currentUser()).toEqual(data.user);
     expect(storage.set).not.toHaveBeenCalled();
   });
   it('uses canonical refresh endpoint and coalesces concurrent refreshes', async () => {
-    api.post.and.returnValue(of({ success: true, data }));
+    api.post.mockReturnValue(of({ success: true, data }));
     const first = firstValueFrom(service.refreshToken());
     const second = firstValueFrom(service.refreshToken());
     await Promise.all([first, second]);
-    expect(api.post).toHaveBeenCalledOnceWith('/auth/refresh', {});
-    expect(service.isAdmin()).toBeTrue();
+    expect(api.post).toHaveBeenCalledTimes(1);
+    expect(api.post).toHaveBeenCalledWith('/auth/refresh', {});
+    expect(service.isAdmin()).toBe(true);
   });
 });

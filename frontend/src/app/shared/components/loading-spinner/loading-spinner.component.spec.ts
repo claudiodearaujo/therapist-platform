@@ -25,7 +25,7 @@ describe('LoadingSpinnerComponent', () => {
     });
 
     it('should have overlay as false by default', () => {
-      expect(component.overlay).toBeFalse();
+      expect(component.overlay).toBe(false);
     });
 
     it('should have empty message by default', () => {
@@ -35,25 +35,25 @@ describe('LoadingSpinnerComponent', () => {
 
   describe('input properties', () => {
     it('should accept sm size', () => {
-      component.size = 'sm';
+      fixture.componentRef.setInput('size', 'sm');
       fixture.detectChanges();
       expect(component.size).toBe('sm');
     });
 
     it('should accept lg size', () => {
-      component.size = 'lg';
+      fixture.componentRef.setInput('size', 'lg');
       fixture.detectChanges();
       expect(component.size).toBe('lg');
     });
 
     it('should accept overlay true', () => {
-      component.overlay = true;
+      fixture.componentRef.setInput('overlay', true);
       fixture.detectChanges();
-      expect(component.overlay).toBeTrue();
+      expect(component.overlay).toBe(true);
     });
 
     it('should accept custom message', () => {
-      component.message = 'Carregando...';
+      fixture.componentRef.setInput('message', 'Carregando...');
       fixture.detectChanges();
       expect(component.message).toBe('Carregando...');
     });

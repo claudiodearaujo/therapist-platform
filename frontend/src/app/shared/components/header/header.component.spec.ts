@@ -1,3 +1,4 @@
+import { vi, type Mocked } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
@@ -19,8 +20,8 @@ class FakeTranslateLoader implements TranslateLoader {
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
-  let authServiceSpy: jasmine.SpyObj<AuthService>;
-  let cartServiceSpy: jasmine.SpyObj<CartService>;
+  let authServiceSpy: Mocked<AuthService>;
+  let cartServiceSpy: Mocked<CartService>;
 
   beforeEach(async () => {
     // Create signals for mocking
@@ -29,21 +30,12 @@ describe('HeaderComponent', () => {
     const currentUserSignal = signal(null);
     const cartItemCountSignal = signal(0);
 
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['logout'], {
-      isAuthenticated: isAuthenticatedSignal,
-      isAdmin: isAdminSignal,
-      currentUser: currentUserSignal,
-    });
+    authServiceSpy = { 'logout': vi.fn(), isAuthenticated: isAuthenticatedSignal, isAdmin: isAdminSignal, currentUser: currentUserSignal } as unknown as Mocked<AuthService>;
 
-    cartServiceSpy = jasmine.createSpyObj('CartService', [], {
-      itemCount: cartItemCountSignal,
-    });
+    cartServiceSpy = { itemCount: cartItemCountSignal } as unknown as Mocked<CartService>;
 
-    const notificationsSpy = jasmine.createSpyObj('InAppNotificationsService', ['list', 'markRead', 'markAllRead', 'delete'], {
-      notifications: signal([]),
-      unreadCount: signal(0),
-    });
-    notificationsSpy.list.and.returnValue(of({ success: true, notifications: [], unreadCount: 0 }));
+    const notificationsSpy = { 'list': vi.fn(), 'markRead': vi.fn(), 'markAllRead': vi.fn(), 'delete': vi.fn(), notifications: signal([]), unreadCount: signal(0) };
+    notificationsSpy.list.mockReturnValue(of({ success: true, notifications: [], unreadCount: 0 }));
 
     await TestBed.configureTestingModule({
       imports: [
@@ -73,19 +65,19 @@ describe('HeaderComponent', () => {
 
   describe('menu toggle', () => {
     it('should toggle menu state', () => {
-      expect(component.isMenuOpen()).toBeFalse();
+      expect(component.isMenuOpen()).toBe(false);
       
       component.toggleMenu();
-      expect(component.isMenuOpen()).toBeTrue();
+      expect(component.isMenuOpen()).toBe(true);
       
       component.toggleMenu();
-      expect(component.isMenuOpen()).toBeFalse();
+      expect(component.isMenuOpen()).toBe(false);
     });
 
     it('should close menu', () => {
       component.isMenuOpen.set(true);
       component.closeMenu();
-      expect(component.isMenuOpen()).toBeFalse();
+      expect(component.isMenuOpen()).toBe(false);
     });
   });
 
@@ -96,17 +88,17 @@ describe('HeaderComponent', () => {
       component.logout();
       
       expect(authServiceSpy.logout).toHaveBeenCalled();
-      expect(component.isMenuOpen()).toBeFalse();
+      expect(component.isMenuOpen()).toBe(false);
     });
   });
 
   describe('computed properties', () => {
     it('should reflect authentication state', () => {
-      expect(component.isAuthenticated()).toBeFalse();
+      expect(component.isAuthenticated()).toBe(false);
     });
 
     it('should reflect admin state', () => {
-      expect(component.isAdmin()).toBeFalse();
+      expect(component.isAdmin()).toBe(false);
     });
 
     it('should reflect cart item count', () => {

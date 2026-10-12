@@ -31,6 +31,6 @@ describe('DsFormFieldComponent', () => {
     await Promise.resolve();
     const input = fixture.nativeElement.querySelector('#email') as HTMLInputElement;
     expect(input.labels?.[0]?.textContent?.trim()).toBe('E-mail');
-    expect(input.hasAttribute('aria-label')).toBeFalse();
+    expect(input.hasAttribute('aria-label')).toBe(false);
   });
 });

@@ -5,11 +5,19 @@
  * Make sure to have a TEST_DATABASE_URL environment variable set.
  */
 
+import { randomUUID } from 'node:crypto';
 import { PrismaClient, ProductType } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 // Create adapter for test database
-const testConnectionString = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL!;
+const testConnectionString = process.env.TEST_DATABASE_URL;
+if (process.env.NODE_ENV !== 'test' || !testConnectionString) {
+  throw new Error('Integration tests require NODE_ENV=test and explicit TEST_DATABASE_URL');
+}
+const testUrl = new URL(testConnectionString);
+if (!['localhost', '127.0.0.1', '[::1]'].includes(testUrl.hostname) || !testUrl.pathname.endsWith('_test')) {
+  throw new Error('Integration tests require a disposable local database ending in _test');
+}
 const testAdapter = new PrismaPg({ connectionString: testConnectionString });
 
 // Use a separate Prisma instance for integration tests
@@ -32,17 +40,22 @@ export async function cleanDatabase() {
     .join(', ');
 
   if (tables.length > 0) {
-    try {
-      await testPrisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
-    } catch (error) {
-      console.log('Error cleaning database:', error);
-    }
+    await testPrisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
   }
 }
 
 /**
  * Create test data fixtures
  */
+async function fixtureTenantId(): Promise<string> {
+  const tenant = await testPrisma.tenant.upsert({
+    where: { slug: 'integration-test' },
+    create: { name: 'Synthetic integration tenant', slug: 'integration-test' },
+    update: {},
+  });
+  return tenant.id;
+}
+
 export async function createTestUser(data: {
   email?: string;
   fullName?: string;
@@ -51,7 +64,7 @@ export async function createTestUser(data: {
 }) {
   return testPrisma.user.create({
     data: {
-      email: data.email || `test-${Date.now()}@test.com`,
+      email: data.email || `test-${randomUUID()}@test.com`,
       fullName: data.fullName || 'Test User',
       role: data.role || 'CLIENT',
       passwordHash: data.password || 'hashedpassword123',
@@ -65,8 +78,9 @@ export async function createTestCategory(data: {
 }) {
   return testPrisma.productCategory.create({
     data: {
-      name: data.name || `Test Category ${Date.now()}`,
-      slug: data.slug || `test-category-${Date.now()}`,
+      tenantId: await fixtureTenantId(),
+      name: data.name || `Test Category ${randomUUID()}`,
+      slug: data.slug || `test-category-${randomUUID()}`,
       isActive: true,
     },
   });
@@ -79,8 +93,9 @@ export async function createTestProduct(data: {
 }) {
   return testPrisma.product.create({
     data: {
-      name: data.name || `Test Product ${Date.now()}`,
-      slug: `test-product-${Date.now()}`,
+      tenantId: await fixtureTenantId(),
+      name: data.name || `Test Product ${randomUUID()}`,
+      slug: `test-product-${randomUUID()}`,
       shortDescription: 'Test product description',
       price: data.price || 100,
       categoryId: data.categoryId,
@@ -96,8 +111,9 @@ export async function createTestCard(data: {
 }) {
   return testPrisma.ciganoCard.create({
     data: {
+      tenantId: await fixtureTenantId(),
       number: data.number || Math.floor(Math.random() * 1000),
-      name: data.name || `Test Card ${Date.now()}`,
+      name: data.name || `Test Card ${randomUUID()}`,
       keywords: ['test', 'card'],
       imageUrl: 'https://example.com/card.jpg',
     },
@@ -115,7 +131,8 @@ export async function createTestOrder(data: {
 
   return testPrisma.order.create({
     data: {
-      orderNumber: `ORD-TEST-${Date.now()}`,
+      tenantId: await fixtureTenantId(),
+      orderNumber: `ORD-TEST-${randomUUID()}`,
       clientId: data.clientId,
       subtotal: total,
       total,

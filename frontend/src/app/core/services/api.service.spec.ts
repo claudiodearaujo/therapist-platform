@@ -127,7 +127,7 @@ describe('ApiService', () => {
 
       const req = httpMock.expectOne(`${environment.apiUrl}/upload`);
       expect(req.request.method).toBe('POST');
-      expect(req.request.body instanceof FormData).toBeTrue();
+      expect(req.request.body instanceof FormData).toBe(true);
       req.flush({ url: 'https://example.com/file.txt' });
     });
 

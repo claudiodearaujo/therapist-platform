@@ -1,3 +1,4 @@
+import { vi, type Mocked } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { CartService, CartItem } from './cart.service';
 import { StorageService } from './storage.service';
@@ -5,7 +6,7 @@ import { Product } from '../models/product.model';
 
 describe('CartService', () => {
   let service: CartService;
-  let storageServiceSpy: jasmine.SpyObj<StorageService>;
+  let storageServiceSpy: Mocked<StorageService>;
 
   const mockProduct: Product = {
     id: 'prod-1',
@@ -44,8 +45,8 @@ describe('CartService', () => {
   };
 
   beforeEach(() => {
-    storageServiceSpy = jasmine.createSpyObj('StorageService', ['get', 'set', 'remove']);
-    storageServiceSpy.get.and.returnValue(null);
+    storageServiceSpy = { 'get': vi.fn(), 'set': vi.fn(), 'remove': vi.fn() } as unknown as Mocked<StorageService>;
+    storageServiceSpy.get.mockReturnValue(null);
 
     TestBed.configureTestingModule({
       providers: [
@@ -68,7 +69,7 @@ describe('CartService', () => {
       expect(service.items().length).toBe(1);
       expect(service.items()[0].product.id).toBe('prod-1');
       expect(service.items()[0].quantity).toBe(1);
-      expect(storageServiceSpy.set).toHaveBeenCalledWith('cart', jasmine.any(Array));
+      expect(storageServiceSpy.set).toHaveBeenCalledWith('cart', expect.any(Array));
     });
 
     it('should increase quantity if item already exists', () => {
@@ -167,14 +168,14 @@ describe('CartService', () => {
         numQuestions: 2,
       } as unknown as Product;
 
-      storageServiceSpy.get.and.returnValue([
+      storageServiceSpy.get.mockReturnValue([
         { product: legacyProduct, quantity: 2 },
       ]);
 
       (service as any).loadCart();
 
       expect(service.items()[0].product.serviceKind).toBe('ASYNC_SERVICE');
-      expect(service.items()[0].product.capabilities.intake?.enabled).toBeTrue();
+      expect(service.items()[0].product.capabilities.intake?.enabled).toBe(true);
       expect(service.items()[0].product.capabilities.intake?.maxQuestions).toBe(2);
     });
   });
