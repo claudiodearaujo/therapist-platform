@@ -1,3 +1,5 @@
+import { ChartModule } from 'primeng/chart';
+import { ChartStubComponent } from '../../../../testing/chart.stub';
 import { vi, type Mocked } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -96,6 +98,7 @@ describe('AdminDashboardComponent', () => {
     );
     readingsServiceSpy.findAll.mockReturnValue(of({ data: [], meta: { total: 0, page: 1, limit: 5, totalPages: 0 } }));
 
+    TestBed.overrideComponent(DashboardComponent, { remove: { imports: [ChartModule] }, add: { imports: [ChartStubComponent] } });
     await TestBed.configureTestingModule({
       imports: [
         AdminDashboardComponent,
