@@ -9,7 +9,14 @@ import { PrismaClient, ProductType } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 // Create adapter for test database
-const testConnectionString = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL!;
+const testConnectionString = process.env.TEST_DATABASE_URL;
+if (process.env.NODE_ENV !== 'test' || !testConnectionString) {
+  throw new Error('Integration tests require NODE_ENV=test and explicit TEST_DATABASE_URL');
+}
+const testUrl = new URL(testConnectionString);
+if (!['localhost', '127.0.0.1', '[::1]'].includes(testUrl.hostname) || !testUrl.pathname.endsWith('_test')) {
+  throw new Error('Integration tests require a disposable local database ending in _test');
+}
 const testAdapter = new PrismaPg({ connectionString: testConnectionString });
 
 // Use a separate Prisma instance for integration tests
@@ -32,11 +39,7 @@ export async function cleanDatabase() {
     .join(', ');
 
   if (tables.length > 0) {
-    try {
-      await testPrisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
-    } catch (error) {
-      console.log('Error cleaning database:', error);
-    }
+    await testPrisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
   }
 }
 

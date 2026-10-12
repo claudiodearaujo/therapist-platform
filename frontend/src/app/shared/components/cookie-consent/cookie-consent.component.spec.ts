@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { vi } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { of } from 'rxjs';
@@ -32,12 +33,15 @@ describe('CookieConsentComponent', () => {
       ],
     }).compileComponents();
 
+    vi.useFakeTimers();
     fixture = TestBed.createComponent(CookieConsentComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
   afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
     localStorage.removeItem('iza_cookie_consent');
   });
 
@@ -46,27 +50,28 @@ describe('CookieConsentComponent', () => {
   });
 
   it('should not be visible immediately on creation', () => {
-    expect(component.visible()).toBeFalse();
+    expect(component.visible()).toBe(false);
   });
 
-  it('should become visible after 800ms if no consent stored', fakeAsync(() => {
-    component.ngOnInit(); // re-trigger inside fakeAsync zone
-    tick(800);
-    expect(component.visible()).toBeTrue();
-  }));
+  it('should become visible after 800ms if no consent stored', async () => {
+    component.ngOnInit();
+    await vi.advanceTimersByTimeAsync(800);
+    expect(component.visible()).toBe(true);
+  });
 
-  it('should not become visible if consent already given', fakeAsync(() => {
+  it('should not become visible if consent already given', async () => {
+    vi.clearAllTimers();
     localStorage.setItem('iza_cookie_consent', 'accepted');
     component.ngOnInit();
-    tick(800);
-    expect(component.visible()).toBeFalse();
-  }));
+    await vi.advanceTimersByTimeAsync(800);
+    expect(component.visible()).toBe(false);
+  });
 
   it('should accept cookies and hide banner', () => {
     component.visible.set(true);
     component.accept();
 
-    expect(component.visible()).toBeFalse();
+    expect(component.visible()).toBe(false);
     expect(localStorage.getItem('iza_cookie_consent')).toBe('accepted');
   });
 
@@ -74,7 +79,7 @@ describe('CookieConsentComponent', () => {
     component.visible.set(true);
     component.decline();
 
-    expect(component.visible()).toBeFalse();
+    expect(component.visible()).toBe(false);
     expect(localStorage.getItem('iza_cookie_consent')).toBe('declined');
   });
 });

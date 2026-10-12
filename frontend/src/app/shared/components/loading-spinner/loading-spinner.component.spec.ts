@@ -25,7 +25,7 @@ describe('LoadingSpinnerComponent', () => {
     });
 
     it('should have overlay as false by default', () => {
-      expect(component.overlay).toBeFalse();
+      expect(component.overlay).toBe(false);
     });
 
     it('should have empty message by default', () => {
@@ -49,7 +49,7 @@ describe('LoadingSpinnerComponent', () => {
     it('should accept overlay true', () => {
       component.overlay = true;
       fixture.detectChanges();
-      expect(component.overlay).toBeTrue();
+      expect(component.overlay).toBe(true);
     });
 
     it('should accept custom message', () => {

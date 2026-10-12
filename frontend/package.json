@@ -39,7 +39,6 @@
     "autoprefixer": "^10.4.23",
     "chart.js": "^4.5.1",
     "postcss": "^8.5.6",
-    "postcss-cli": "^11.0.1",
     "primeicons": "^7.0.0",
     "primeng": "^20.4.0",
     "quill": "2.0.2",
@@ -54,13 +53,13 @@
     "@angular/build": "^20.1.6",
     "@angular/cli": "^20.3.17",
     "@angular/compiler-cli": "20.3.32",
-    "@types/jasmine": "~5.1.0",
-    "jasmine-core": "~5.8.0",
-    "karma": "~6.4.0",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.0",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.8.2"
+    "typescript": "~5.8.2",
+    "vitest": "4.1.11",
+    "jsdom": "26.1.0"
+  },
+  "overrides": {
+    "@angular/build": {
+      "vitest": "$vitest"
+    }
   }
 }

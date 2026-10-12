@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { vi, type Mocked } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
@@ -64,19 +65,14 @@ const mockAppointment: Appointment = {
 describe('AdminAppointmentListComponent', () => {
   let component: AdminAppointmentListComponent;
   let fixture: ComponentFixture<AdminAppointmentListComponent>;
-  let appointmentsServiceSpy: jasmine.SpyObj<AppointmentsService>;
-  let notificationSpy: jasmine.SpyObj<NotificationService>;
+  let appointmentsServiceSpy: Mocked<AppointmentsService>;
+  let notificationSpy: Mocked<NotificationService>;
 
   beforeEach(async () => {
-    appointmentsServiceSpy = jasmine.createSpyObj('AppointmentsService', [
-      'findAll',
-      'updateStatus',
-      'reschedule',
-      'update',
-    ]);
-    notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error']);
+    appointmentsServiceSpy = { 'findAll': vi.fn(), 'updateStatus': vi.fn(), 'reschedule': vi.fn(), 'update': vi.fn() } as unknown as Mocked<AppointmentsService>;
+    notificationSpy = { 'success': vi.fn(), 'error': vi.fn() } as unknown as Mocked<NotificationService>;
 
-    appointmentsServiceSpy.findAll.and.returnValue(
+    appointmentsServiceSpy.findAll.mockReturnValue(
       of({ data: [mockAppointment], meta: { total: 1, page: 1, limit: 10, totalPages: 1 } })
     );
 
@@ -107,7 +103,7 @@ describe('AdminAppointmentListComponent', () => {
   it('should load appointments on init', () => {
     expect(appointmentsServiceSpy.findAll).toHaveBeenCalled();
     expect(component.appointments().length).toBe(1);
-    expect(component.loading()).toBeFalse();
+    expect(component.loading()).toBe(false);
   });
 
   it('should compute upcomingCount for CONFIRMED appointments', () => {
@@ -122,13 +118,13 @@ describe('AdminAppointmentListComponent', () => {
     expect(component.cancelledCount()).toBe(0);
   });
 
-  it('should handle error when loading appointments', fakeAsync(() => {
-    appointmentsServiceSpy.findAll.and.returnValue(throwError(() => new Error('HTTP error')));
+  it('should handle error when loading appointments', async () => {
+    appointmentsServiceSpy.findAll.mockReturnValue(throwError(() => new Error('HTTP error')));
     component.loadAppointments();
-    tick();
+    await Promise.resolve();
     expect(component.appointments()).toEqual([]);
-    expect(component.loading()).toBeFalse();
-  }));
+    expect(component.loading()).toBe(false);
+  });
 
   describe('statusOptions getter', () => {
     it('should return all status options', () => {
@@ -146,12 +142,12 @@ describe('AdminAppointmentListComponent', () => {
 
   it('should open reschedule dialog', () => {
     component.openRescheduleDialog(mockAppointment);
-    expect(component.rescheduleDialogVisible()).toBeTrue();
+    expect(component.rescheduleDialogVisible()).toBe(true);
     expect(component.selectedAppointment()).toEqual(mockAppointment);
   });
 
   it('should open notes dialog', () => {
     component.openNotesDialog(mockAppointment);
-    expect(component.notesDialogVisible()).toBeTrue();
+    expect(component.notesDialogVisible()).toBe(true);
   });
 });

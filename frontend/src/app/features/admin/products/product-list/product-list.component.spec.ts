@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { vi, type Mocked } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
@@ -72,19 +73,19 @@ const mockCategory: ProductCategory = {
 describe('AdminProductListComponent', () => {
   let component: AdminProductListComponent;
   let fixture: ComponentFixture<AdminProductListComponent>;
-  let productsServiceSpy: jasmine.SpyObj<ProductsService>;
-  let categoriesServiceSpy: jasmine.SpyObj<CategoriesService>;
-  let notificationSpy: jasmine.SpyObj<NotificationService>;
+  let productsServiceSpy: Mocked<ProductsService>;
+  let categoriesServiceSpy: Mocked<CategoriesService>;
+  let notificationSpy: Mocked<NotificationService>;
 
   beforeEach(async () => {
-    productsServiceSpy = jasmine.createSpyObj('ProductsService', ['findAllAdmin', 'delete']);
-    categoriesServiceSpy = jasmine.createSpyObj('CategoriesService', ['findAllAdmin']);
-    notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error']);
+    productsServiceSpy = { 'findAllAdmin': vi.fn(), 'delete': vi.fn() } as unknown as Mocked<ProductsService>;
+    categoriesServiceSpy = { 'findAllAdmin': vi.fn() } as unknown as Mocked<CategoriesService>;
+    notificationSpy = { 'success': vi.fn(), 'error': vi.fn() } as unknown as Mocked<NotificationService>;
 
-    productsServiceSpy.findAllAdmin.and.returnValue(
+    productsServiceSpy.findAllAdmin.mockReturnValue(
       of({ data: [mockProduct], meta: { total: 1, page: 1, limit: 10, totalPages: 1 } })
     );
-    categoriesServiceSpy.findAllAdmin.and.returnValue(
+    categoriesServiceSpy.findAllAdmin.mockReturnValue(
       of({ data: [mockCategory] })
     );
 
@@ -128,7 +129,7 @@ describe('AdminProductListComponent', () => {
   });
 
   it('should set loading to false after loading', () => {
-    expect(component.loading()).toBeFalse();
+    expect(component.loading()).toBe(false);
   });
 
   it('should return service kind options', () => {
@@ -138,11 +139,11 @@ describe('AdminProductListComponent', () => {
     expect(options[1].value).toBe('SERVICE');
   });
 
-  it('should handle error when loading products', fakeAsync(() => {
-    productsServiceSpy.findAllAdmin.and.returnValue(throwError(() => new Error('HTTP error')));
+  it('should handle error when loading products', async () => {
+    productsServiceSpy.findAllAdmin.mockReturnValue(throwError(() => new Error('HTTP error')));
     component.loadProducts();
-    tick();
+    await Promise.resolve();
     expect(component.products()).toEqual([]);
-    expect(component.loading()).toBeFalse();
-  }));
+    expect(component.loading()).toBe(false);
+  });
 });

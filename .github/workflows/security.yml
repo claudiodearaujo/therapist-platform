@@ -88,4 +88,9 @@ jobs:
         working-directory: backend
       - run: node scripts/security-integration.cjs
         working-directory: backend
+      - name: Database integration tests (disposable CI database)
+        run: npm run test:integration -- --ci --runInBand
+        working-directory: backend
+        env:
+          TEST_DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/therapist_security_test
       - run: node --test scripts/security/gates.test.cjs

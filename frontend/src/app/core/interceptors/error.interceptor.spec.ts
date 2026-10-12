@@ -1,3 +1,4 @@
+import { vi, type Mocked } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse, HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -7,14 +8,14 @@ import { NotificationService } from '../services/notification.service';
 import { AuthService } from '../services/auth.service';
 
 describe('errorInterceptor public navigation', () => {
-  let router: jasmine.SpyObj<Router>;
-  let notificationService: jasmine.SpyObj<NotificationService>;
-  let authService: jasmine.SpyObj<AuthService>;
+  let router: Mocked<Router>;
+  let notificationService: Mocked<NotificationService>;
+  let authService: Mocked<AuthService>;
 
   beforeEach(() => {
-    router = jasmine.createSpyObj<Router>('Router', ['navigate']);
-    notificationService = jasmine.createSpyObj<NotificationService>('NotificationService', ['showError']);
-    authService = jasmine.createSpyObj<AuthService>('AuthService', ['getAccessToken']);
+    router = { 'navigate': vi.fn() } as unknown as Mocked<Router>;
+    notificationService = { 'showError': vi.fn() } as unknown as Mocked<NotificationService>;
+    authService = { 'getAccessToken': vi.fn() } as unknown as Mocked<AuthService>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -42,7 +43,7 @@ describe('errorInterceptor public navigation', () => {
   }
 
   it('should not redirect an anonymous visitor to login on a public 401', () => {
-    authService.getAccessToken.and.returnValue(null);
+    authService.getAccessToken.mockReturnValue(null);
 
     execute401();
 
@@ -51,11 +52,12 @@ describe('errorInterceptor public navigation', () => {
   });
 
   it('should redirect an authenticated session to login on 401', () => {
-    authService.getAccessToken.and.returnValue('expired-token');
+    authService.getAccessToken.mockReturnValue('expired-token');
 
     execute401('/api/admin/settings');
 
-    expect(router.navigate).toHaveBeenCalledOnceWith(['/auth/login']);
+    expect(router.navigate).toHaveBeenCalledTimes(1);
+    expect(router.navigate).toHaveBeenCalledWith(['/auth/login']);
     expect(notificationService.showError).toHaveBeenCalledWith('Sessão expirada. Faça login novamente.');
   });
 });

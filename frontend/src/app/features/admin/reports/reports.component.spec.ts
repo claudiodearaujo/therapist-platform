@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { vi, type Mocked } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
@@ -72,24 +73,20 @@ const mockTopProducts: TopProduct[] = [
 describe('AdminReportsComponent', () => {
   let component: AdminReportsComponent;
   let fixture: ComponentFixture<AdminReportsComponent>;
-  let dashboardServiceSpy: jasmine.SpyObj<DashboardService>;
-  let notificationSpy: jasmine.SpyObj<NotificationService>;
+  let dashboardServiceSpy: Mocked<DashboardService>;
+  let notificationSpy: Mocked<NotificationService>;
 
   beforeEach(async () => {
-    dashboardServiceSpy = jasmine.createSpyObj('DashboardService', [
-      'getStats',
-      'getSalesChart',
-      'getTopProducts',
-    ]);
-    notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error']);
+    dashboardServiceSpy = { 'getStats': vi.fn(), 'getSalesChart': vi.fn(), 'getTopProducts': vi.fn() } as unknown as Mocked<DashboardService>;
+    notificationSpy = { 'success': vi.fn(), 'error': vi.fn() } as unknown as Mocked<NotificationService>;
 
-    dashboardServiceSpy.getStats.and.returnValue(
+    dashboardServiceSpy.getStats.mockReturnValue(
       of({ data: mockStats })
     );
-    dashboardServiceSpy.getSalesChart.and.returnValue(
+    dashboardServiceSpy.getSalesChart.mockReturnValue(
       of({ data: { labels: ['Jan', 'Feb'], datasets: [{ label: 'Sales', data: [100, 200] }] } })
     );
-    dashboardServiceSpy.getTopProducts.and.returnValue(
+    dashboardServiceSpy.getTopProducts.mockReturnValue(
       of({ data: mockTopProducts })
     );
 
@@ -120,7 +117,7 @@ describe('AdminReportsComponent', () => {
   it('should load stats on init', () => {
     expect(dashboardServiceSpy.getStats).toHaveBeenCalled();
     expect(component.stats()).toEqual(mockStats);
-    expect(component.loading()).toBeFalse();
+    expect(component.loading()).toBe(false);
   });
 
   it('should load sales chart on init', () => {
@@ -152,24 +149,24 @@ describe('AdminReportsComponent', () => {
   });
 
   it('should reload sales chart when period changes', () => {
-    dashboardServiceSpy.getSalesChart.calls.reset();
+    dashboardServiceSpy.getSalesChart.mockClear();
     component.period.set('week');
     component.onPeriodChange();
     expect(dashboardServiceSpy.getSalesChart).toHaveBeenCalledWith('week');
   });
 
-  it('should handle error when loading stats', fakeAsync(() => {
-    dashboardServiceSpy.getStats.and.returnValue(throwError(() => new Error('HTTP error')));
+  it('should handle error when loading stats', async () => {
+    dashboardServiceSpy.getStats.mockReturnValue(throwError(() => new Error('HTTP error')));
     component.loadReports();
-    tick();
+    await Promise.resolve();
     expect(component.stats()!.totalOrders).toBe(0);
-    expect(component.loading()).toBeFalse();
-  }));
+    expect(component.loading()).toBe(false);
+  });
 
-  it('should handle error when loading top products', fakeAsync(() => {
-    dashboardServiceSpy.getTopProducts.and.returnValue(throwError(() => new Error('HTTP error')));
+  it('should handle error when loading top products', async () => {
+    dashboardServiceSpy.getTopProducts.mockReturnValue(throwError(() => new Error('HTTP error')));
     component.loadTopProducts();
-    tick();
+    await Promise.resolve();
     expect(component.topProducts()).toEqual([]);
-  }));
+  });
 });

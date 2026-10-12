@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { vi, type Mocked } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateModule, TranslateLoader, TranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
@@ -21,14 +22,14 @@ const mockOrder: Order = {
 describe('AdminOrderListComponent', () => {
   let component: AdminOrderListComponent;
   let fixture: ComponentFixture<AdminOrderListComponent>;
-  let ordersServiceSpy: jasmine.SpyObj<OrdersService>;
-  let notificationSpy: jasmine.SpyObj<NotificationService>;
+  let ordersServiceSpy: Mocked<OrdersService>;
+  let notificationSpy: Mocked<NotificationService>;
 
   beforeEach(async () => {
-    ordersServiceSpy=jasmine.createSpyObj('OrdersService',['findAll','getStats','updateStatus','updateAdminNotes']);
-    notificationSpy=jasmine.createSpyObj('NotificationService',['success','error']);
-    ordersServiceSpy.findAll.and.returnValue(of({data:[mockOrder],meta:{total:1,page:1,limit:10,totalPages:1}}));
-    ordersServiceSpy.getStats.and.returnValue(of({data:{total:12,pending:3,completed:7,revenue:2500}}));
+    ordersServiceSpy={ 'findAll': vi.fn(), 'getStats': vi.fn(), 'updateStatus': vi.fn(), 'updateAdminNotes': vi.fn() } as unknown as Mocked<OrdersService>;
+    notificationSpy={ 'success': vi.fn(), 'error': vi.fn() } as unknown as Mocked<NotificationService>;
+    ordersServiceSpy.findAll.mockReturnValue(of({data:[mockOrder],meta:{total:1,page:1,limit:10,totalPages:1}}));
+    ordersServiceSpy.getStats.mockReturnValue(of({data:{total:12,pending:3,completed:7,revenue:2500}}));
 
     await TestBed.configureTestingModule({
       imports:[AdminOrderListComponent,RouterTestingModule,NoopAnimationsModule,TranslateModule.forRoot({loader:{provide:TranslateLoader,useClass:FakeTranslateLoader}})],
@@ -43,6 +44,6 @@ describe('AdminOrderListComponent', () => {
   it('should load orders and aggregate stats on init',()=>{expect(ordersServiceSpy.findAll).toHaveBeenCalled();expect(ordersServiceSpy.getStats).toHaveBeenCalled();expect(component.stats().revenue).toBe(2500)});
   it('should map order statuses to semantic tones',()=>{expect(component.getStatusTone('PENDING')).toBe('warning');expect(component.getStatusTone('COMPLETED')).toBe('success');expect(component.getStatusTone('CANCELLED')).toBe('error')});
   it('should map payment statuses separately',()=>{expect(component.getPaymentStatusTone('SUCCEEDED')).toBe('success');expect(component.getPaymentStatusTone('FAILED')).toBe('error');expect(component.getPaymentStatusLabel('PENDING')).toBe('Pagamento pendente')});
-  it('should handle load error',fakeAsync(()=>{ordersServiceSpy.findAll.and.returnValue(throwError(()=>new Error('HTTP')));component.loadOrders();tick();expect(component.orders()).toEqual([]);expect(component.loading()).toBeFalse()}));
-  it('should open notes dialog',()=>{component.openNotesDialog(mockOrder);expect(component.notesDialogVisible()).toBeTrue();expect(component.selectedOrder()).toEqual(mockOrder)});
+  it('should handle load error',async ()=>{ordersServiceSpy.findAll.mockReturnValue(throwError(()=>new Error('HTTP')));component.loadOrders();await Promise.resolve();expect(component.orders()).toEqual([]);expect(component.loading()).toBe(false)});
+  it('should open notes dialog',()=>{component.openNotesDialog(mockOrder);expect(component.notesDialogVisible()).toBe(true);expect(component.selectedOrder()).toEqual(mockOrder)});
 });

@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { vi, type Mocked } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateModule, TranslateLoader, TranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
@@ -81,23 +82,19 @@ const mockRecentOrders: RecentOrder[] = [
 describe('AdminDashboardComponent', () => {
   let component: AdminDashboardComponent;
   let fixture: ComponentFixture<AdminDashboardComponent>;
-  let dashboardServiceSpy: jasmine.SpyObj<DashboardService>;
-  let readingsServiceSpy: jasmine.SpyObj<ReadingsService>;
+  let dashboardServiceSpy: Mocked<DashboardService>;
+  let readingsServiceSpy: Mocked<ReadingsService>;
 
   beforeEach(async () => {
-    dashboardServiceSpy = jasmine.createSpyObj('DashboardService', [
-      'getStats',
-      'getRecentOrders',
-      'getSalesChart',
-    ]);
-    readingsServiceSpy = jasmine.createSpyObj('ReadingsService', ['findAll']);
+    dashboardServiceSpy = { 'getStats': vi.fn(), 'getRecentOrders': vi.fn(), 'getSalesChart': vi.fn() } as unknown as Mocked<DashboardService>;
+    readingsServiceSpy = { 'findAll': vi.fn() } as unknown as Mocked<ReadingsService>;
 
-    dashboardServiceSpy.getStats.and.returnValue(of({ data: mockStats }));
-    dashboardServiceSpy.getRecentOrders.and.returnValue(of({ data: mockRecentOrders }));
-    dashboardServiceSpy.getSalesChart.and.returnValue(
+    dashboardServiceSpy.getStats.mockReturnValue(of({ data: mockStats }));
+    dashboardServiceSpy.getRecentOrders.mockReturnValue(of({ data: mockRecentOrders }));
+    dashboardServiceSpy.getSalesChart.mockReturnValue(
       of({ data: { labels: ['Jan'], datasets: [{ label: 'Revenue', data: [1000] }] } })
     );
-    readingsServiceSpy.findAll.and.returnValue(of({ data: [], meta: { total: 0, page: 1, limit: 5, totalPages: 0 } }));
+    readingsServiceSpy.findAll.mockReturnValue(of({ data: [], meta: { total: 0, page: 1, limit: 5, totalPages: 0 } }));
 
     await TestBed.configureTestingModule({
       imports: [
@@ -142,16 +139,16 @@ describe('AdminDashboardComponent', () => {
   });
 
   it('should set loading to false after loading', () => {
-    expect(component.loading()).toBeFalse();
+    expect(component.loading()).toBe(false);
   });
 
-  it('should handle stats error with default values', fakeAsync(() => {
-    dashboardServiceSpy.getStats.and.returnValue(throwError(() => new Error('HTTP error')));
+  it('should handle stats error with default values', async () => {
+    dashboardServiceSpy.getStats.mockReturnValue(throwError(() => new Error('HTTP error')));
     component.loadDashboard();
-    tick();
+    await Promise.resolve();
     expect(component.stats()!.totalOrders).toBe(0);
     expect(component.stats()!.totalRevenue).toBe(0);
-  }));
+  });
 
   it('should return correct status label for PENDING', () => {
     expect(component.getStatusLabel('PENDING')).toBe('Pending');
