@@ -28,6 +28,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY package*.json ./
+COPY supabase-ca.crt ./supabase-ca.crt
 
 EXPOSE 3000
 

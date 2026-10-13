@@ -31,8 +31,10 @@ export const env = {
   // Supabase
   SUPABASE_STORAGE_INIT: process.env.SUPABASE_STORAGE_INIT === 'true',
   SUPABASE_URL: process.env.SUPABASE_URL || '',
-  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
-  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  // Modern keys take precedence; retain the legacy slots used by the clients.
+  // Never substitute a public key for an admin key (or vice versa).
+  SUPABASE_ANON_KEY: process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || '',
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
   SUPABASE_PRIVATE_STORAGE_BUCKET: process.env.SUPABASE_PRIVATE_STORAGE_BUCKET || 'therapist-private',
   SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET || 'therapist-platform',
   
@@ -120,7 +122,11 @@ if (env.isProduction) {
     'FRONTEND_URL',
   ];
 
-  const missing = required.filter((key) => !process.env[key]);
+  // Validate the resolved admin alias, but keep other production settings
+  // explicitly required rather than accepting development defaults from env.
+  const missing = required.filter((key) => key === 'SUPABASE_SERVICE_ROLE_KEY'
+    ? !env.SUPABASE_SERVICE_ROLE_KEY
+    : !process.env[key]);
 
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);

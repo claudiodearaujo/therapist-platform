@@ -3,10 +3,11 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { env } from './env';
+import { postgresConnectionOptions } from './database-tls';
 
 // Create PostgreSQL adapter
 const connectionString = process.env.DATABASE_URL!;
-const adapter = new PrismaPg({ connectionString });
+const adapter = new PrismaPg(postgresConnectionOptions(connectionString));
 
 // Create Prisma client with Prisma 7 adapter configuration
 export const prisma = new PrismaClient({
