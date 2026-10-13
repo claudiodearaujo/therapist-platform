@@ -16,6 +16,7 @@ services:
 
   backend:
     image: therapist-platform-backend:local
+    pull_policy: never
     restart: unless-stopped
     depends_on:
       db:
@@ -61,6 +62,7 @@ services:
 
   frontend:
     image: therapist-platform-frontend:local
+    pull_policy: never
     restart: unless-stopped
     depends_on:
       backend:
