@@ -32,3 +32,14 @@ Tracked filename screening identified `backend/.env.example`, but no tracked `.e
 - Record final inventory, validation outcomes, commit and PR.
 
 Do not mark CLEAN/AUDITED/READY until these gates are green.
+
+## Closure checkpoint — 2026-10-14
+
+- PR #131 merged to `main` as `5c88d50`; continuation branch `chore/mig-g3h-audit-closure` created from merged main.
+- Backend `npm run build`: PASS (exit 0; Prisma Client 7.10.0 generated).
+- Frontend `npm run build`: PASS (exit 0; nonblocking CSS budget and CommonJS warnings).
+- Backend `npm run test:unit -- --runInBand --silent`: PASS (31 suites, 403 tests).
+- Content scanner: 6,692 tracked paths; 259 files skipped due to size, binary or unavailable contents; zero matches for private-key blocks, GitHub token and AWS key patterns. One Supabase service-key pattern match in tracked `backend/.env.example`; value not displayed, file untouched per user instruction. 105 password-assignment pattern matches concentrated in bundled `.claude/skills` examples and benchmark fixtures; these require triage, not automatic classification as credentials.
+- `.claude/skills` includes 1,997 tracked files; benchmark fixtures remain preserved pending ownership and dependency audit.
+- E2E, integration, complete historical secret scanning, dependency vulnerabilities and comprehensive PRD reconciliation remain unverified.
+- Result: builds/unit tests PASS; overall MIG-G3.H remains AUDIT_REQUIRED, not yet CLEAN/AUDITED/READY.
