@@ -43,3 +43,13 @@ Do not mark CLEAN/AUDITED/READY until these gates are green.
 - `.claude/skills` includes 1,997 tracked files; benchmark fixtures remain preserved pending ownership and dependency audit.
 - E2E, integration, complete historical secret scanning, dependency vulnerabilities and comprehensive PRD reconciliation remain unverified.
 - Result: builds/unit tests PASS; overall MIG-G3.H remains AUDIT_REQUIRED, not yet CLEAN/AUDITED/READY.
+
+## Follow-up checkpoint — 2026-10-16
+
+- PR #132 merged into `main` at `ca70a7b`.
+- Integration test run: BLOCKED (3 suites, zero tests); test harness explicitly requires `NODE_ENV=test`, a `TEST_DATABASE_URL` with localhost/127.0.0.1/[::1] host and database name ending `_test`. No shared Supabase database was used.
+- GitHub Dependabot API: 31 open alerts: 3 critical (`proxy-addr`), 12 high (`brace-expansion`, `http-cache-semantics`, `source-map-js`), 15 moderate (`brace-expansion`, `ip-address`, `python-dotenv`), 1 low (`quill`). Package references are aggregate, not necessarily unique vulnerabilities.
+- PRD documentation roles and explicit operational gates recorded in `docs/DOCUMENTATION-INDEX.md`; no ambiguous documentation deleted.
+- `.env` unchanged; pre-existing `backend/.env.example` modification excluded from commit.
+- E2E execution needs isolated frontend/test backend and browser provisioning; test discovery is being evaluated separately.
+- Status: AUDIT_REQUIRED due to unresolved dependency alerts, integration/E2E evidence, and historical secret review. Do not mark READY.
